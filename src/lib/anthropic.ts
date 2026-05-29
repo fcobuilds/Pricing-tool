@@ -1,6 +1,14 @@
 import Anthropic from "@anthropic-ai/sdk";
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+let _client: Anthropic | null = null;
+
+function getClient(): Anthropic {
+  if (!_client) {
+    if (!process.env.ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY is not set");
+    _client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  }
+  return _client;
+}
 
 export async function getMarketResearch(params: {
   serviceType: string;
@@ -55,7 +63,7 @@ Respond ONLY with valid JSON — no markdown, no explanation outside the JSON:
   "marketContext": "1-2 sentences about what similar providers typically charge in this area"
 }`;
 
-  const message = await anthropic.messages.create({
+  const message = await getClient().messages.create({
     model: "claude-opus-4-5",
     max_tokens: 512,
     messages: [{ role: "user", content: prompt }],

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Upload, X, Check, AlertCircle } from "lucide-react";
 
 function parseCSV(text: string): Record<string, string>[] {
@@ -14,6 +15,7 @@ function parseCSV(text: string): Record<string, string>[] {
 }
 
 export default function ImportClients() {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [preview, setPreview] = useState<Record<string, string>[]>([]);
   const [fileName, setFileName] = useState("");
@@ -57,6 +59,11 @@ export default function ImportClients() {
     setFileName("");
     setResult(null);
     if (fileRef.current) fileRef.current.value = "";
+  }
+
+  function handleDone() {
+    reset();
+    router.refresh();
   }
 
   return (
@@ -144,7 +151,7 @@ export default function ImportClients() {
                       </ul>
                     </div>
                   )}
-                  <button onClick={() => { reset(); window.location.reload(); }} className="btn-primary mt-4">
+                  <button onClick={handleDone} className="btn-primary mt-4">
                     Done
                   </button>
                 </div>

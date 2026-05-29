@@ -12,12 +12,17 @@ const DEFAULT_RATES = [
 ];
 
 export async function GET() {
-  let rates = await prisma.serviceRate.findMany({ orderBy: { displayName: "asc" } });
-  if (rates.length === 0) {
-    for (const rate of DEFAULT_RATES) {
-      await prisma.serviceRate.upsert({ where: { serviceType: rate.serviceType }, update: {}, create: rate });
+  try {
+    let rates = await prisma.serviceRate.findMany({ orderBy: { displayName: "asc" } });
+    if (rates.length === 0) {
+      for (const rate of DEFAULT_RATES) {
+        await prisma.serviceRate.upsert({ where: { serviceType: rate.serviceType }, update: {}, create: rate });
+      }
+      rates = await prisma.serviceRate.findMany({ orderBy: { displayName: "asc" } });
     }
-    rates = await prisma.serviceRate.findMany({ orderBy: { displayName: "asc" } });
+    return NextResponse.json(rates);
+  } catch (err) {
+    console.error("GET /api/rates", err);
+    return NextResponse.json({ error: "Failed to load rates" }, { status: 500 });
   }
-  return NextResponse.json(rates);
 }
