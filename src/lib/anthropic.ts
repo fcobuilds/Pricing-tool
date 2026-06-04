@@ -17,6 +17,10 @@ export async function getMarketResearch(params: {
   techLevel: string;
   needLevel: string;
   estimatedHours?: number;
+  multiTask?: boolean;
+  isRepeatClient?: boolean;
+  previousPrice?: number;
+  previousService?: string;
 }): Promise<{
   low: number;
   high: number;
@@ -34,6 +38,14 @@ export async function getMarketResearch(params: {
     workshop: "Workshop / Training Session",
   };
 
+  const repeatClientLine = params.isRepeatClient && params.previousPrice
+    ? `- Client History: REPEAT CLIENT — previously charged $${params.previousPrice} for ${serviceLabels[params.previousService || ""] || params.previousService || "a previous visit"} (use this as a pricing anchor for consistency)`
+    : "- Client History: New client";
+
+  const multiTaskLine = params.multiTask
+    ? "- Visit Complexity: MULTI-TASK VISIT — this visit covered several unrelated problems (e.g. 3-4 different tasks). Context-switching between unrelated issues takes more mental effort and time coordination; apply a complexity premium above a simple hourly calculation."
+    : "";
+
   const prompt = `You are a pricing consultant helping a solo IT and tech services freelancer determine what to charge a client. The freelancer provides personalized, often in-home IT support for residential clients, and IT/tech services for small-medium businesses.
 
 Service Request:
@@ -42,8 +54,10 @@ Service Request:
 - Work Description: ${params.description}
 - Client Tech Level: ${params.techLevel} (beginner = needs more hand-holding, advanced = more technical)
 - Urgency/Need Level: ${params.needLevel}${
-    params.estimatedHours ? `\n- Estimated Hours: ${params.estimatedHours}` : ""
+    params.estimatedHours ? `\n- Time Spent: ${params.estimatedHours} hours` : ""
   }
+${repeatClientLine}
+${multiTaskLine}
 
 Research current market rates for this type of freelance/independent work in ${params.location}. Consider:
 - Local cost of living and market rates
@@ -51,8 +65,10 @@ Research current market rates for this type of freelance/independent work in ${p
 - Client tech level (beginners often need more time and patience, which justifies higher rates)
 - Urgency (urgent work commands a premium)
 - The solo/personalized nature of the service
+- Repeat client pricing: stay consistent with past charges unless scope changed significantly
+- Multi-task visits: covering several unrelated problems in one visit warrants a premium over the raw hourly math
 
-Provide a realistic price range and recommendation. For hourly services with estimated hours, give total project price. For monthly services, give monthly rate.
+Provide a realistic price range and recommendation. For hourly services with estimated hours, give total visit price. For monthly services, give monthly rate.
 
 Respond ONLY with valid JSON — no markdown, no explanation outside the JSON:
 {

@@ -13,6 +13,10 @@ export async function POST(req: NextRequest) {
         techLevel: data.techLevel,
         needLevel: data.needLevel,
         estimatedHours: data.estimatedHours,
+        multiTask: data.multiTask,
+        isRepeatClient: data.isRepeatClient,
+        previousPrice: data.previousPrice,
+        previousService: data.previousService,
       }),
       prisma.serviceRate.findUnique({ where: { serviceType: data.serviceType } }),
     ]);
