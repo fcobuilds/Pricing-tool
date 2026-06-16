@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Client {
+  id         String   @id @default(cuid())
+  name       String
+  email      String?
+  phone      String?
+  location   String
+  techLevel  String
+  clientType String
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  quotes     Quote[]
+}
+
+model Quote {
+  id               String   @id @default(cuid())
+  clientId         String
+  client           Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  serviceType      String
+  description      String
+  estimatedHours   Float?
+  finalPrice       Float?
+  recommendedPrice Float?
+  marketLow        Float?
+  marketHigh       Float?
+  marketResearch   String?
+  needLevel        String   @default("medium")
+  status           String   @default("draft")
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model ServiceRate {
+  id          String   @id @default(cuid())
+  serviceType String   @unique
+  displayName String
+  minRate     Float
+  maxRate     Float
+  unit        String
+  notes       String?
+  updatedAt   DateTime @default(now()) @updatedAt
+}
